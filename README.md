@@ -1,5 +1,25 @@
 # Cyclomatic and Cognitive complextity examples
 
+## Installation
+
+I would prefer use it as global alias in my .bashrc or .zshrc configs:
+
+```
+alias complexity="php PATH_TO_PROJECT_DIR/bin/calculate-complexity.php $@"
+```
+
+After adding it in config, don't forget reload it, for example:
+
+```
+source ~/.zshrc
+```
+
+Then I can use it everywhere like that:
+
+```
+> complexity ./src
+```
+
 ## What
 
 This project contains PHP scripts that will allow you to calculate the

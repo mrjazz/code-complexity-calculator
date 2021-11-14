@@ -124,7 +124,10 @@ $data = array_map(function ($file, $cyclomatic, $cognitive) {
 // });
 
 
-$totalScore = 0;
+$scoreTotal = 0;
+$cognitiveTotal = 0;
+$cyclomaticTotal = 0;
+
 foreach ($files as $file) {
     // var_dump($cyclomatic[$file]);
     // var_dump($cognitive[$file]);
@@ -133,15 +136,24 @@ foreach ($files as $file) {
         return $cognitive * $cyclomatic;
     }, $cyclomatic[$file], $cognitive[$file]);
 
-    $score = array_sum($scores);
-    $totalScore += $score;
+    $scoresSum = array_sum($scores);
+    $cyclomaticSum = array_sum($cyclomatic[$file]);
+    $cognitiveSum = array_sum($cognitive[$file]);
+    $cyclomaticTotal += $cyclomaticSum;
+    $cognitiveTotal += $cognitiveSum;
+    $scoreTotal += $scoresSum;
 
     echo <<<"TXT"
-           {$file} = {$score}
+           {$file} = cy({$cyclomaticSum}) x co({$cognitiveSum}) = {$scoresSum}
 
     TXT;
 }
 
-echo "Total Complexity: $totalScore\n";
+echo "
+Total Complexity
+        cyclomatic: $cyclomaticTotal
+        cognitive: $cognitiveTotal
+        total: $scoreTotal
+";
 
 exit;
