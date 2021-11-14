@@ -34,12 +34,35 @@ if (defined('PHP_CODESNIFFER_VERBOSITY') === false) {
 // Remove the script name
 array_shift($argv);
 
-/*/ Only use files that exist /*/
-$files = array_filter($argv, function ($file) {
-   return is_file($file);
-});
 
-$files = array_unique($files);
+// recursive directories scan
+function scanAllDir($dir) {
+  $result = [];
+  foreach(scandir($dir) as $filename) {
+    if ($filename[0] === '.') continue;
+    $filePath = $dir . '/' . $filename;
+    if (is_dir($filePath)) {
+      foreach (scanAllDir($filePath) as $childFilename) {
+        $result[] = $childFilename;
+      }
+    } else {
+      $result[] = $filePath;
+    }
+  }
+  return $result;
+}
+
+
+if (count($argv) == 1 && is_dir($argv[0])) {
+    $files = scanAllDir($argv[0]);
+} else {
+    /*/ Only use files that exist /*/
+    $files = array_filter($argv, function ($file) {
+       return is_file($file);
+    });
+
+    $files = array_unique($files);
+}
 
 /*/ Get file(s) contents /*/
 $contents = [];
@@ -83,24 +106,42 @@ $data = array_map(function ($file, $cyclomatic, $cognitive) {
     ];
 }, $files, $cyclomatic, $cognitive);
 
-/*/ Build Output /*/
-$output = '';
-array_walk($data, function ($data) use (&$output) {
+// /*/ Build Output /*/
+// $output = '';
+// array_walk($data, function ($data) use (&$output) {
+//     $scores = array_map(function ($cyclomatic, $cognitive) {
+//         return  vsprintf('%d = cy(%d) * co(%d)', [$cognitive * $cyclomatic, $cognitive,$cyclomatic]);
+//     }, $data['cyclomatic'], $data['cognitive']);
+
+//     $methods = join("\n                  ", $scores);
+//     $output .= <<<"TXT"
+
+//            File : {$data['file']}
+//         Methods : {$methods}
+
+// TXT
+//     ;
+// });
+
+
+$totalScore = 0;
+foreach ($files as $file) {
+    // var_dump($cyclomatic[$file]);
+    // var_dump($cognitive[$file]);
+
     $scores = array_map(function ($cyclomatic, $cognitive) {
-        return  vsprintf('%d = cy(%d) * co(%d)', [$cognitive * $cyclomatic, $cognitive,$cyclomatic]);
-    }, $data['cyclomatic'], $data['cognitive']);
+        return $cognitive * $cyclomatic;
+    }, $cyclomatic[$file], $cognitive[$file]);
 
-    $methods = join("\n                  ", $scores);
-    $output .= <<<"TXT"
+    $score = array_sum($scores);
+    $totalScore += $score;
 
-           File : {$data['file']}
-        Methods : {$methods}
+    echo <<<"TXT"
+           {$file} = {$score}
 
-TXT
-    ;
-});
+    TXT;
+}
 
-
-echo $output;
+echo "Total Complexity: $totalScore\n";
 
 exit;
