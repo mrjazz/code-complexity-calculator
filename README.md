@@ -1,4 +1,4 @@
-# Cyclomatic and Cognitive complextity examples
+# Cyclomatic and Cognitive complextity calculator
 
 ## Installation
 
